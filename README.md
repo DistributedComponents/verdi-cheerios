@@ -16,15 +16,15 @@ Requirements
 Building
 --------
 
-The recommended way to install the OCaml and Coq dependencies of Verdi Cheerios is via [OPAM](https://coq.inria.fr/opam/www/using.html):
+The recommended way to install Verdi Cheerios is via [OPAM](https://coq.inria.fr/opam/www/using.html):
 
 ```
 opam repo add coq-released https://coq.inria.fr/opam/released
 opam repo add distributedcomponents-dev http://opam-dev.distributedcomponents.net
-opam install verdi StructTact cheerios coq-mathcomp-ssreflect
+opam install verdi-cheerios
 ```
 
-Then, run `./configure` in the root directory.  This will check for the appropriate version of Coq and ensure all necessary dependencies can be located.
+To build Verdi Cheerios manually, run `./configure` in the root directory.  This will check for the appropriate version of Coq and ensure all necessary dependencies can be located.
 
 By default, the script assumes that `Verdi`, `StructTact`, and `Cheerios` are installed in Coq's `user-contrib` directory, but this can be overridden by setting the `Verdi_PATH`, `StructTact_PATH`, and `Cheerios_PATH` environment variables.
 
