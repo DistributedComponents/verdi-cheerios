@@ -20,9 +20,12 @@ default: Makefile.coq
 	$(MAKE) -f Makefile.coq
 
 Makefile.coq: _CoqProject
-	coq_makefile -f _CoqProject -o Makefile.coq -no-install \
+	coq_makefile -f _CoqProject -o Makefile.coq \
           -extra-phony 'distclean' 'clean' \
 	    'rm -f $$(join $$(dir $$(VFILES)),$$(addprefix .,$$(notdir $$(patsubst %.v,%.aux,$$(VFILES)))))'
+
+install: Makefile.coq
+	$(MAKE) -f Makefile.coq install
 
 clean:
 	if [ -f Makefile.coq ]; then \
@@ -36,4 +39,4 @@ lint:
 distclean: clean
 	rm -f _CoqProject
 
-.PHONY: default clean lint
+.PHONY: default clean lint install
