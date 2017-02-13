@@ -31,7 +31,7 @@ Section SerializedCorrect.
   Definition serialize_net (net : @network _ orig_multi_params) : (@network _ serialized_multi_params) :=
     @mkNetwork _ serialized_multi_params (map serialize_packet (nwPackets net)) net.(nwState).
 
-  Definition serialize_tr_occ (e : @name _ orig_multi_params * (@input orig_base_params + list (@output orig_base_params))) :
+  Definition serialize_trace_occ (e : @name _ orig_multi_params * (@input orig_base_params + list (@output orig_base_params))) :
     @name _ serialized_multi_params * (@input serialized_base_params + list (@output serialized_base_params)) :=
   let (n, s) := e in
   match s with
@@ -45,7 +45,7 @@ Section SerializedCorrect.
   Definition serialize_odnet (net : @ordered_dynamic_network _ orig_multi_params) : (@ordered_dynamic_network _ serialized_multi_params) :=
     @mkODNetwork _ serialized_multi_params net.(odnwNodes) (fun src dst => map serialize (net.(odnwPackets) src dst)) net.(odnwState).
 
-  Definition serialize_trace (e : @name _ orig_multi_params * (@input orig_base_params + (@output orig_base_params))) :=
+  Definition serialize_trace_ev (e : @name _ orig_multi_params * (@input orig_base_params + (@output orig_base_params))) :=
     match e with
     | (n, inl i) => (n, inl (serialize i))
     | (n, inr o) => (n, inr (serialize o))
@@ -158,7 +158,7 @@ Section SerializedCorrect.
   Lemma step_async_serialize_simulation :
     forall net net' tr,
       @step_async _ orig_multi_params net net' tr ->
-      @step_async _ serialized_multi_params (serialize_net net) (serialize_net net') (map serialize_tr_occ tr).
+      @step_async _ serialized_multi_params (serialize_net net) (serialize_net net') (map serialize_trace_occ tr).
   Proof.
   move => net net' out H_step.
   apply step_async_tot_mapped_simulation_1 in H_step.
@@ -175,7 +175,7 @@ Section SerializedCorrect.
   Lemma step_async_serialize_simulation_star :
     forall net tr,
       @step_async_star _ orig_multi_params step_async_init net tr ->
-      @step_async_star _ serialized_multi_params step_async_init (serialize_net net) (map serialize_tr_occ tr).
+      @step_async_star _ serialized_multi_params step_async_init (serialize_net net) (map serialize_trace_occ tr).
   Proof.
   move => net tr H_step.
   apply step_async_tot_mapped_simulation_star_1 in H_step.
@@ -192,7 +192,7 @@ Section SerializedCorrect.
   Lemma step_failure_serialize_simulation :
     forall net net' failed failed' tr,
       @step_failure _ _ orig_failure_params (failed, net) (failed', net') tr ->
-      @step_failure _ _ serialized_failure_params (failed, serialize_net net) (failed', serialize_net net') (map serialize_tr_occ tr).
+      @step_failure _ _ serialized_failure_params (failed, serialize_net net) (failed', serialize_net net') (map serialize_trace_occ tr).
   Proof.
   move => net net' failed failed' tr H_step.
   apply step_failure_tot_mapped_simulation_1 in H_step.
@@ -210,7 +210,7 @@ Section SerializedCorrect.
   Lemma step_failure_serialize_simulation_star :
     forall net failed tr,
       @step_failure_star _ _ orig_failure_params step_failure_init (failed, net) tr ->
-      @step_failure_star _ _ serialized_failure_params step_failure_init (failed, serialize_net net) (map serialize_tr_occ tr).
+      @step_failure_star _ _ serialized_failure_params step_failure_init (failed, serialize_net net) (map serialize_trace_occ tr).
   Proof.
   move => net failed tr H_step.
   apply step_failure_tot_mapped_simulation_star_1 in H_step.
@@ -228,7 +228,7 @@ Section SerializedCorrect.
   Lemma step_ordered_failure_serialize_simulation :
   forall net net' failed failed' tr,
     @step_ordered_failure _ _ orig_name_overlay_params orig_fail_msg_params (failed, net) (failed', net') tr ->
-    @step_ordered_failure _ _ serialized_name_overlay_params serialized_fail_msg_params (failed, serialize_onet net) (failed', serialize_onet net') (map serialize_trace tr).
+    @step_ordered_failure _ _ serialized_name_overlay_params serialized_fail_msg_params (failed, serialize_onet net) (failed', serialize_onet net') (map serialize_trace_ev tr).
   Proof.
   move => net net' failed failed' tr H_step.
   have H_eq_n: failed = map (@tot_map_name _ _ _ _ orig_multi_params_name_tot_map) failed by rewrite /tot_map_name /= map_id.
@@ -241,7 +241,7 @@ Section SerializedCorrect.
   Lemma step_ordered_failure_serialize_simulation_star :
   forall net failed tr,
     @step_ordered_failure_star _ _ orig_name_overlay_params orig_fail_msg_params step_ordered_failure_init (failed, net) tr ->
-    @step_ordered_failure_star _ _ serialized_name_overlay_params serialized_fail_msg_params step_ordered_failure_init (failed, serialize_onet net) (map serialize_trace tr).
+    @step_ordered_failure_star _ _ serialized_name_overlay_params serialized_fail_msg_params step_ordered_failure_init (failed, serialize_onet net) (map serialize_trace_ev tr).
   Proof.
   move => net failed tr H_st.
   have ->: failed = map (@tot_map_name _ _ _ _ orig_multi_params_name_tot_map) failed by rewrite /tot_map_name /= map_id.
@@ -252,7 +252,7 @@ Section SerializedCorrect.
   forall net net' failed failed' tr,
     NoDup (odnwNodes net) ->
     @step_ordered_dynamic_failure _ _ orig_name_overlay_params orig_new_msg_params orig_fail_msg_params (failed, net) (failed', net') tr ->
-    @step_ordered_dynamic_failure _ _ serialized_name_overlay_params serialized_new_msg_params serialized_fail_msg_params (failed, serialize_odnet net) (failed', serialize_odnet net') (map serialize_trace tr).
+    @step_ordered_dynamic_failure _ _ serialized_name_overlay_params serialized_new_msg_params serialized_fail_msg_params (failed, serialize_odnet net) (failed', serialize_odnet net') (map serialize_trace_ev tr).
   Proof.
   move => net net' failed failed' tr H_nd H_step.
   have H_eq_n: failed = map (@tot_map_name _ _ _ _ orig_multi_params_name_tot_map) failed by rewrite /tot_map_name /= map_id.
@@ -266,7 +266,7 @@ Section SerializedCorrect.
   Lemma step_ordered_dynamic_failure_serialize_simulation_star :
   forall net failed tr,
     @step_ordered_dynamic_failure_star _ _ orig_name_overlay_params orig_new_msg_params orig_fail_msg_params step_ordered_dynamic_failure_init (failed, net) tr ->
-    @step_ordered_dynamic_failure_star _ _ serialized_name_overlay_params serialized_new_msg_params serialized_fail_msg_params step_ordered_dynamic_failure_init (failed, serialize_odnet net) (map serialize_trace tr).
+    @step_ordered_dynamic_failure_star _ _ serialized_name_overlay_params serialized_new_msg_params serialized_fail_msg_params step_ordered_dynamic_failure_init (failed, serialize_odnet net) (map serialize_trace_ev tr).
   Proof.
   move => net failed tr H_st.
   have ->: failed = map (@tot_map_name _ _ _ _ orig_multi_params_name_tot_map) failed by rewrite /tot_map_name /= map_id.
@@ -277,7 +277,7 @@ Section SerializedCorrect.
   (* partial map simulation *)
 
   Definition deserialize_packet (p : @packet _ serialized_multi_params) : option (@packet _ orig_multi_params) :=
-    match (deserialize (pBody p)) with
+    match deserialize (pBody p) with
     | None => None
     | Some (body, _) =>
       Some (@mkPacket _ orig_multi_params (pSrc p) (pDst p) body)
@@ -292,7 +292,7 @@ Section SerializedCorrect.
   Definition deserialize_odnet (net: @ordered_dynamic_network _ serialized_multi_params) :  (@ordered_dynamic_network _ orig_multi_params) :=
     @mkODNetwork _ orig_multi_params net.(odnwNodes) (fun src dst => filterMap (fun m => match deserialize m with Some (data, _) => Some data | None => None end) (net.(odnwPackets) src dst)) net.(odnwState).
 
-  Definition deserialize_tr_occ (e : @name _ serialized_multi_params * (@input serialized_base_params + list (@output serialized_base_params))) :
+  Definition deserialize_trace_occ (e : @name _ serialized_multi_params * (@input serialized_base_params + list (@output serialized_base_params))) :
     option (@name _ orig_multi_params * (@input orig_base_params + list (@output orig_base_params))) :=
   let (n, s) := e in
   match s with
@@ -304,7 +304,7 @@ Section SerializedCorrect.
   | inr lo => Some (n, inr (filterMap (fun o => match deserialize o with Some (data, _) => Some data | None => None end) lo))
   end.
 
-  Definition deserialize_trace (e : @name _ serialized_multi_params * (@input serialized_base_params + @output serialized_base_params)) :
+  Definition deserialize_trace_ev (e : @name _ serialized_multi_params * (@input serialized_base_params + @output serialized_base_params)) :
     option (@name _ orig_multi_params * (@input orig_base_params + @output orig_base_params)) :=
    match e with
    | (n, inl i) => 
@@ -318,23 +318,6 @@ Section SerializedCorrect.
       | None => None
       end
    end.
-
-  Definition trace_nonempty (e : @name _ orig_multi_params * (@input orig_base_params + list (@output orig_base_params))) :
-    option (@name _ orig_multi_params * (@input orig_base_params + list (@output orig_base_params))) :=
-  match e with
-  | (n, inr []) => None
-  | _ => Some e
-  end.
-
-  Lemma pt_trace_remove_empty_out_filterMap_trace_nonempty : 
-    forall tr, pt_trace_remove_empty_out tr = filterMap trace_nonempty tr.
-  Proof.
-  elim => //=.
-  case => n.
-  case => [i|].
-  - by move => l IH; rewrite IH.
-  - by case => [|o lo] l IH; rewrite IH.
-  Qed.
 
   Lemma deserialize_serialize_net_id : forall net,
       deserialize_net (serialize_net net) = net.
@@ -385,11 +368,11 @@ Section SerializedCorrect.
   Qed.
 
   Lemma filterMap_deserialize_tr_occ_map_serialize_id :
-    forall tr, filterMap deserialize_tr_occ (map serialize_tr_occ tr) = tr.
+    forall tr, filterMap deserialize_trace_occ (map serialize_trace_occ tr) = tr.
   Proof.
   elim => //=.
   case => n. 
-  case => [i|o] l IH; rewrite /deserialize_tr_occ /serialize_tr_occ /=.
+  case => [i|o] l IH; rewrite /deserialize_trace_occ /serialize_trace_occ /=.
   - by rewrite serialize_deserialize_id_nil /= IH.
   - rewrite IH.
     set fMo := filterMap _ _.
@@ -402,11 +385,11 @@ Section SerializedCorrect.
   Qed.
 
   Lemma filterMap_deserialize_trace_map_serialize_id :
-    forall tr, filterMap deserialize_trace (map serialize_trace tr) = tr.
+    forall tr, filterMap deserialize_trace_ev (map serialize_trace_ev tr) = tr.
   Proof.
   elim => //=.
   case => n. 
-  case => [i|o] l IH; rewrite /deserialize_trace /serialize_trace /=.
+  case => [i|o] l IH /=.
   - by rewrite serialize_deserialize_id_nil IH.
   - by rewrite serialize_deserialize_id_nil IH.
   Qed.
@@ -499,16 +482,16 @@ Section SerializedCorrect.
     rewrite /serialize_handler_result in Heqp.
     repeat break_let.
     find_injection.
-    set sl3 := pt_map_outputs _.
-    set sl2 := pt_map_name_msgs _.
+    set sl3 := filterMap (fun _ => _) _.
+    set sl2 := filterMap _ _.
     have H_eq: sl3 = l3.
-      rewrite /sl3 /pt_map_outputs.
+      rewrite /sl3.
       clear.
       elim: l3 => //=.
       move => o l IH.
       by rewrite serialize_deserialize_id_nil IH.
     have H_eq': sl2 = l2.
-      rewrite /sl2 /pt_map_name_msgs /tot_map_name /id /= /id /serialize_name_msg_tuple.
+      rewrite /sl2 /pt_map_name_msg /tot_map_name /id /= /id /serialize_name_msg_tuple.
       clear.
       elim: l2 => //=.
       case => [n m] => /=.
@@ -534,16 +517,16 @@ Section SerializedCorrect.
     rewrite /serialize_handler_result in Heqp.
     repeat break_let.
     find_injection.
-    set sl3 := pt_map_outputs _.
-    set sl2 := pt_map_name_msgs _.
+    set sl3 := filterMap (fun _ => _) _.
+    set sl2 := filterMap _ _.
     have H_eq: sl3 = l3.
-      rewrite /sl3 /pt_map_outputs.
+      rewrite /sl3.
       clear.
       elim: l3 => //=.
       move => o l IH.
       by rewrite serialize_deserialize_id_nil IH.
     have H_eq': sl2 = l2.
-      rewrite /sl2 /pt_map_name_msgs /tot_map_name /id /= /id /serialize_name_msg_tuple.
+      rewrite /sl2 /pt_map_name_msg /tot_map_name /id /= /id /serialize_name_msg_tuple.
       clear.
       elim: l2 => //=.
       case => [n m] => /=.
@@ -558,39 +541,29 @@ Section SerializedCorrect.
     by find_injection.
   Qed.
 
-  Lemma pt_map_trace_filterMap : 
-    forall tr, pt_map_trace tr = filterMap deserialize_tr_occ tr.
+  Lemma pt_map_trace_occ_filterMap :
+    forall tr, filterMap pt_map_trace_occ tr = filterMap deserialize_trace_occ tr.
   Proof.
-  rewrite /pt_map_packet /tot_map_name /= /deserialize_packet.
+  rewrite /pt_map_trace_occ /tot_map_name /= /deserialize_packet.
   elim => //=.
   case => n.
-  case => [i|o] l IH.
-  - rewrite -IH /pt_map_trace_occ /pt_map_input /= /deserialize_tr_occ /=.
-    case: deserialize => //=.
-    by case => i' l'.
-  - rewrite -IH /pt_map_trace_occ /pt_map_outputs /= /deserialize_tr_occ /= /id /=.
-    set fm := fold_right _ _ _.
-    set fm' := filterMap _ _.
-    suff H_eq: fm = fm' by rewrite H_eq.
-    rewrite /fm /fm'.
-    clear.
-    elim: o => //=.
-    move => a l IH.
-    by rewrite -IH.
+  case => [i|o] l IH; last by rewrite -IH.
+  rewrite -IH /pt_map_trace_occ /pt_map_input /= /deserialize_trace_occ /=.
+  case: deserialize => //=.
+  by case => i' l'.
   Qed.
 
-  Lemma pt_map_traces_filterMap : 
-    forall tr, pt_map_traces tr = filterMap deserialize_trace tr.
+  Lemma pt_map_trace_ev_filterMap :
+    forall tr, filterMap pt_map_trace_ev tr = filterMap deserialize_trace_ev tr.
   Proof.
-  rewrite /pt_map_traces /tot_map_name /=.
+  rewrite /pt_map_trace_ev /tot_map_name /=.
   elim => //=.
   case => n.
   case => [i|o] l IH.
-  - rewrite -IH /pt_map_trace_ev /pt_map_input /= /deserialize_trace /=.
+  - rewrite -IH /pt_map_trace_ev /pt_map_input /= /deserialize_trace_ev /=.
     case: deserialize => //=.
     by case => i' l'.
-  - rewrite -IH /pt_map_trace_ev /pt_map_output /= /deserialize_trace /= /id /=.
-    set fm := fold_right _ _ _.
+  - rewrite -IH /pt_map_trace_ev /pt_map_output /= /deserialize_trace_ev /= /id /=.
     by case: deserialize; first case.
   Qed.
 
@@ -599,8 +572,8 @@ Section SerializedCorrect.
   Proof.
   move => net.
   rewrite /deserialize_net.
-  rewrite /pt_map_net /pt_map_data /= /id /= /pt_map_packets.
-  set fm := fold_right _ _ _.
+  rewrite /pt_map_net /pt_map_data /= /id /= /pt_map_packet.
+  set fm := filterMap _ _.
   set fm' := filterMap _ _.
   suff H_eq: fm = fm' by rewrite H_eq.
   rewrite /fm /fm'.
@@ -615,59 +588,32 @@ Section SerializedCorrect.
 
   Lemma pt_map_onet_deserialize_onet : 
     forall net, pt_map_onet net = deserialize_onet net.
-  Proof.
-  move => net.
-  rewrite /deserialize_onet.
-  rewrite /pt_map_onet /pt_map_data /= /id /= /pt_map_msgs.
-  set fm := fun _ _ => fold_right _ _ _.
-  set fm' := fun _ _ => filterMap _ _.
-  suff H_eq: fm = fm' by rewrite H_eq.
-  rewrite /fm /fm'.
-  clear.
-  apply functional_extensionality => src.
-  apply functional_extensionality => dst.
-  rewrite /pt_map_msg /=.
-  elim (onwPackets net src dst) => //=.
-  move => a l IH.
-  rewrite IH.
-  by case: deserialize; first case.
-  Qed.
+  Proof. by []. Qed.
   
   Lemma pt_map_odnet_deserialize_odnet : 
     forall net, pt_map_odnet net = deserialize_odnet net.
   Proof.
   move => net.
   rewrite /deserialize_odnet.
-  rewrite /pt_map_odnet /pt_map_data /= /id /= /pt_map_msgs.
-  set fm := fun _ _ => fold_right _ _ _.
-  set fm' := fun _ _ => filterMap _ _.
+  rewrite /pt_map_odnet /pt_map_data /= /id /= /pt_map_msg.
+  set fm := fun _ _ => filterMap _ _.
   rewrite map_id.
-  have H_eq: fm = fm'.
-    rewrite /fm /fm'.
-    clear.
-    apply functional_extensionality => src.
-    apply functional_extensionality => dst.
-    rewrite /pt_map_msg /=.
-    elim (odnwPackets net src dst) => //=.
-    move => a l IH.
-    rewrite IH.
-    by case: deserialize; first case.
   set s := fun _ => match _ with _ => _ end.
-  have H_eq': odnwState net = s.
+  have H_eq: odnwState net = s.
     rewrite /s.
     apply functional_extensionality => n.
     by case: odnwState.
-  by rewrite H_eq H_eq'.
-  Qed.  
+  by rewrite H_eq.
+  Qed.
 
   Lemma step_async_deserialized_simulation :
   forall net net' tr,
     @step_async _ serialized_multi_params net net' tr ->
-    @step_async _ orig_multi_params (deserialize_net net) (deserialize_net net') (filterMap deserialize_tr_occ tr) \/ 
-    (deserialize_net net' = deserialize_net net /\ filterMap trace_nonempty (filterMap deserialize_tr_occ tr) = []).
+    @step_async _ orig_multi_params (deserialize_net net) (deserialize_net net') (filterMap deserialize_trace_occ tr) \/ 
+    (deserialize_net net' = deserialize_net net /\ filterMap pt_trace_remove_empty_out (filterMap deserialize_trace_occ tr) = []).
   Proof.
   move => net net' tr H_st.
-  rewrite -pt_map_trace_filterMap -2!pt_map_net_deserialize_net -pt_trace_remove_empty_out_filterMap_trace_nonempty.
+  rewrite -pt_map_trace_occ_filterMap -2!pt_map_net_deserialize_net.
   exact: step_async_pt_mapped_simulation_1.
   Qed.
 
@@ -675,29 +621,28 @@ Section SerializedCorrect.
   forall net tr,
     @step_async_star _ serialized_multi_params step_async_init net tr ->
     exists tr', @step_async_star _ orig_multi_params step_async_init (deserialize_net net) tr' /\ 
-     filterMap trace_nonempty (filterMap deserialize_tr_occ tr) = filterMap trace_nonempty tr'.
+     filterMap pt_trace_remove_empty_out (filterMap deserialize_trace_occ tr) = filterMap pt_trace_remove_empty_out tr'.
   Proof.
   move => net tr H_st.
   apply step_async_pt_mapped_simulation_star_1 in H_st.
   break_exists.
   break_and.
   exists x.
-  by rewrite -pt_map_trace_filterMap -pt_map_net_deserialize_net -2!pt_trace_remove_empty_out_filterMap_trace_nonempty.
+  by rewrite -pt_map_trace_occ_filterMap -pt_map_net_deserialize_net.
   Qed.
 
   Lemma step_failure_deserialized_simulation :
   forall net net' failed failed' tr,
     @step_failure _ _ serialized_failure_params (failed, net) (failed', net') tr ->
-    @step_failure _ _ orig_failure_params (failed, deserialize_net net) (failed', deserialize_net net') (filterMap deserialize_tr_occ tr) \/ 
-    (deserialize_net net' = deserialize_net net /\ failed = failed' /\ filterMap trace_nonempty (filterMap deserialize_tr_occ tr) = []).
+    @step_failure _ _ orig_failure_params (failed, deserialize_net net) (failed', deserialize_net net') (filterMap deserialize_trace_occ tr) \/ 
+    (deserialize_net net' = deserialize_net net /\ failed = failed' /\ filterMap pt_trace_remove_empty_out (filterMap deserialize_trace_occ tr) = []).
   Proof.
   move => net net' failed failed' tr H_st.
-  rewrite -pt_map_trace_filterMap -2!pt_map_net_deserialize_net.
+  rewrite -pt_map_trace_occ_filterMap -2!pt_map_net_deserialize_net.
   have H_eq_n: failed = map (@tot_map_name _ _ _ _ multi_params_orig_name_tot_map) failed by rewrite /tot_map_name /= map_id.
   rewrite {1}H_eq_n.
   have H_eq_n': failed' = map (@tot_map_name _ _ _ _ multi_params_orig_name_tot_map) failed' by rewrite /tot_map_name /= map_id.
   rewrite {1}H_eq_n'.
-  rewrite -pt_trace_remove_empty_out_filterMap_trace_nonempty.
   exact: step_failure_pt_mapped_simulation_1.
   Qed.
 
@@ -705,14 +650,14 @@ Section SerializedCorrect.
   forall net failed tr,
     @step_failure_star _ _ serialized_failure_params step_failure_init (failed, net) tr ->
     exists tr', @step_failure_star _ _ orig_failure_params step_failure_init (failed, deserialize_net net) tr' /\ 
-     filterMap trace_nonempty (filterMap deserialize_tr_occ tr) = filterMap trace_nonempty tr'.
+     filterMap pt_trace_remove_empty_out (filterMap deserialize_trace_occ tr) = filterMap pt_trace_remove_empty_out tr'.
   Proof.
   move => net failed tr H_st.
   apply step_failure_pt_mapped_simulation_star_1 in H_st.
   break_exists.
   break_and.
   exists x.
-  rewrite -pt_map_trace_filterMap -pt_map_net_deserialize_net -2!pt_trace_remove_empty_out_filterMap_trace_nonempty.
+  rewrite -pt_map_trace_occ_filterMap -pt_map_net_deserialize_net.
   have H_eq_n: failed = map (@tot_map_name _ _ _ _ multi_params_orig_name_tot_map) failed by rewrite /tot_map_name /= map_id.
   by rewrite {1}H_eq_n.
   Qed.
@@ -720,8 +665,8 @@ Section SerializedCorrect.
   Lemma step_ordered_failure_deserialized_simulation :
     forall net net' failed failed' tr,
       @step_ordered_failure _ _ serialized_name_overlay_params serialized_fail_msg_params (failed, net) (failed', net') tr ->
-      @step_ordered_failure _ _ orig_name_overlay_params orig_fail_msg_params (failed, deserialize_onet net) (failed', deserialize_onet net') (filterMap deserialize_trace tr) \/
-      deserialize_onet net = deserialize_onet net' /\ failed = failed' /\ filterMap deserialize_trace tr = [].
+      @step_ordered_failure _ _ orig_name_overlay_params orig_fail_msg_params (failed, deserialize_onet net) (failed', deserialize_onet net') (filterMap deserialize_trace_ev tr) \/
+      deserialize_onet net = deserialize_onet net' /\ failed = failed' /\ filterMap deserialize_trace_ev tr = [].
   Proof.   
   move => net net' failed failed' tr H_st.
   eapply step_ordered_failure_pt_mapped_simulation_1 in H_st.
@@ -732,21 +677,21 @@ Section SerializedCorrect.
     rewrite {1}H_eq_n'.
     left.
     rewrite -2!pt_map_onet_deserialize_onet.
-    rewrite -pt_map_traces_filterMap.
+    rewrite -pt_map_trace_ev_filterMap.
     exact: H_st.
   right.
   break_and.
-  by rewrite -2!pt_map_onet_deserialize_onet -pt_map_traces_filterMap.
+  by rewrite -2!pt_map_onet_deserialize_onet -pt_map_trace_ev_filterMap.
   Qed.
 
   Lemma step_ordered_failure_serialized_simulation_star :
     forall net failed tr,
     @step_ordered_failure_star _ _ serialized_name_overlay_params serialized_fail_msg_params step_ordered_failure_init (failed, net) tr ->
-    @step_ordered_failure_star _ _ orig_name_overlay_params orig_fail_msg_params step_ordered_failure_init (failed, deserialize_onet net) (filterMap deserialize_trace tr).
+    @step_ordered_failure_star _ _ orig_name_overlay_params orig_fail_msg_params step_ordered_failure_init (failed, deserialize_onet net) (filterMap deserialize_trace_ev tr).
   Proof.
   move => onet failed tr H_st.
   apply step_ordered_failure_pt_mapped_simulation_star_1 in H_st.
-  rewrite -pt_map_onet_deserialize_onet -pt_map_traces_filterMap.  
+  rewrite -pt_map_onet_deserialize_onet -pt_map_trace_ev_filterMap.
   by rewrite map_id in H_st.
   Qed.
 
@@ -754,8 +699,8 @@ Section SerializedCorrect.
   forall net net' failed failed' tr,
     NoDup (odnwNodes net) ->
     @step_ordered_dynamic_failure _ _ serialized_name_overlay_params serialized_new_msg_params serialized_fail_msg_params (failed, net) (failed', net') tr ->
-    @step_ordered_dynamic_failure _ _ orig_name_overlay_params orig_new_msg_params orig_fail_msg_params (failed, deserialize_odnet net) (failed', deserialize_odnet net') (filterMap deserialize_trace tr) \/
-    deserialize_odnet net = deserialize_odnet net' /\ failed = failed' /\ filterMap deserialize_trace tr = [].
+    @step_ordered_dynamic_failure _ _ orig_name_overlay_params orig_new_msg_params orig_fail_msg_params (failed, deserialize_odnet net) (failed', deserialize_odnet net') (filterMap deserialize_trace_ev tr) \/
+    deserialize_odnet net = deserialize_odnet net' /\ failed = failed' /\ filterMap deserialize_trace_ev tr = [].
   Proof.
   move => net net' failed failed' tr H_nd H_st.
   eapply step_ordered_dynamic_failure_pt_mapped_simulation_1 in H_st; last by [].
@@ -766,22 +711,21 @@ Section SerializedCorrect.
     rewrite {1}H_eq_n'.
     left.
     rewrite -2!pt_map_odnet_deserialize_odnet.
-    rewrite -pt_map_traces_filterMap.
+    rewrite -pt_map_trace_ev_filterMap.
     exact: H_st.
   right.
   break_and.
-  by rewrite -2!pt_map_odnet_deserialize_odnet -pt_map_traces_filterMap.
+  by rewrite -2!pt_map_odnet_deserialize_odnet -pt_map_trace_ev_filterMap.
   Qed.
 
   Theorem step_ordered_dynamic_failure_dserialized_simulation_star :
     forall net failed tr,
     @step_ordered_dynamic_failure_star _ _ serialized_name_overlay_params serialized_new_msg_params serialized_fail_msg_params step_ordered_dynamic_failure_init (failed, net) tr ->
-    @step_ordered_dynamic_failure_star _ _ orig_name_overlay_params orig_new_msg_params orig_fail_msg_params step_ordered_dynamic_failure_init (failed, deserialize_odnet net) (filterMap deserialize_trace tr).
+    @step_ordered_dynamic_failure_star _ _ orig_name_overlay_params orig_new_msg_params orig_fail_msg_params step_ordered_dynamic_failure_init (failed, deserialize_odnet net) (filterMap deserialize_trace_ev tr).
   Proof.
   move => onet failed tr H_st.
-  apply step_ordered_dynamic_failure_pt_mapped_simulation_star_1 in H_st.  
+  apply step_ordered_dynamic_failure_pt_mapped_simulation_star_1 in H_st.
   rewrite map_id in H_st.
-  by rewrite -pt_map_odnet_deserialize_odnet -pt_map_traces_filterMap.
+  by rewrite -pt_map_odnet_deserialize_odnet -pt_map_trace_ev_filterMap.
   Qed.
-
 End SerializedCorrect.
