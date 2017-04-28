@@ -8,15 +8,16 @@ A verified system transformer for serialization of Verdi systems using the Cheer
 Requirements
 ------------
 
-- [`Coq 8.5`](https://coq.inria.fr/download)
+- [`Coq 8.5`](https://coq.inria.fr/coq-85) or [`Coq 8.6`](https://coq.inria.fr/coq-86)
+- [`mathcomp-ssreflect 1.6`](http://math-comp.github.io/math-comp/) or [`mathcomp-ssreflect 1.6.1`](http://math-comp.github.io/math-comp/)
 - [`Verdi`](https://github.com/uwplse/verdi)
 - [`Cheerios`](https://github.com/uwplse/cheerios)
-- [`Mathematical Components 1.6`](http://math-comp.github.io/math-comp/) (`ssreflect` library)
 
 Building
 --------
 
-The recommended way to install Verdi Cheerios is via [OPAM](https://coq.inria.fr/opam/www/using.html):
+The recommended way of installing Verdi Cheerios is via [OPAM](http://opam.ocaml.org/doc/Install.html),
+which will automatically build and install its dependencies.
 
 ```
 opam repo add coq-released https://coq.inria.fr/opam/released
