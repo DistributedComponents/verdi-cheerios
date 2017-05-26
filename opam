@@ -1,0 +1,28 @@
+opam-version: "1.2"
+version: "dev"
+maintainer: "palmskog@gmail.com"
+
+homepage: "https://github.com/DistributedComponents/verdi-cheerios"
+dev-repo: "https://github.com/DistributedComponents/verdi-cheerios.git"
+bug-reports: "https://github.com/DistributedComponents/verdi-cheerios/issues"
+license: "Proprietary"
+
+build: [
+  [ "./configure" ]
+  [ make "-j%{jobs}%" ]
+]
+install: [ make "install" ]
+remove: [ "sh" "-c" "rm -rf '%{lib}%/coq/user-contrib/VerdiCheerios'" ]
+depends: [ 
+  "coq" {((>= "8.5" & < "8.6~") | (>= "8.6" & < "8.7~"))}
+  "coq-mathcomp-ssreflect" {>= "1.6" & < "1.7~"}
+  "StructTact" {= "dev"}
+  "cheerios" {= "dev"}
+  "verdi" {= "dev"}
+]
+
+tags: [ "keyword:serialization" ]
+authors: [
+  "Keith Simmons <>"
+  "Karl Palmskog <>"
+]
