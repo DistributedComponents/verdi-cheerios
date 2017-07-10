@@ -15,53 +15,50 @@ Section Serialized.
   Context {orig_output_serializer : Serializer output}.
   Context {orig_msg_serializer : Serializer msg}.
 
-  Definition serialize_name_msg_tuple (n_msg : (name * msg)) :=
-    let (n, msg) := n_msg in
-    (n, serialize msg).
+  Definition serialize_name_msg_tuple (nm : name * msg) :=
+    let (n, msg) := nm in
+    (n, serialize_top serialize msg).
 
-  Definition serialize_handler_result (result : (list output) * data * list (name * msg)) :
-    list (list bool) * data * list (name * list bool) :=
-    let '(outputs, data, messages) := result in
-    let outputsBits := map (@serialize output orig_output_serializer) outputs in
-    let messagesBits := map serialize_name_msg_tuple messages in
-    (outputsBits, data, messagesBits).
+  Definition serialize_handler_result (res : (list output) * data * list (name * msg)) :=
+    let '(outputs, data, messages) := res in
+    let serialized_outputs := map (serialize_top (@serialize output orig_output_serializer)) outputs in
+    let serialized_messages := map serialize_name_msg_tuple messages in
+    (serialized_outputs, data, serialized_messages).
 
   Definition serialized_net_handlers
              (dst : name)
              (src : name)
-             (mBits : list bool)
-             (d : data) :
-    list (list bool) * data * list (name * list bool) :=
-    match (deserialize mBits) with
+             (wm : Serializer.wire)
+             (d : data) :=
+    match deserialize_top deserialize wm with
     | None => ([], d, [])
-    | Some (m, rest) =>
+    | Some m =>
       serialize_handler_result (net_handlers dst src m d)
     end.
 
   Definition serialized_input_handlers
              (h : name)
-             (inpBits : list bool)
-             (d : data) :
-    list (list bool) * data * list (name * list bool) :=
-    match (deserialize inpBits) with
+             (winp : Serializer.wire)
+             (d : data) :=
+    match deserialize_top deserialize winp with
     | None => ([], d, [])
-    | Some (inp, rest) =>
+    | Some inp =>
       serialize_handler_result (input_handlers h inp d)
     end.
 
   Instance serialized_base_params : BaseParams :=
     {
       data := data;
-      input := list bool;
-      output := list bool
+      input := Serializer.wire;
+      output := Serializer.wire
     }.
 
   Instance serialized_multi_params : MultiParams _ :=
     {
       name := name;
       name_eq_dec := name_eq_dec;
-      msg := list bool;
-      msg_eq_dec := (list_eq_dec Bool.bool_dec);
+      msg := Serializer.wire;
+      msg_eq_dec := Serializer.wire_eq_dec;
       nodes := nodes;
       init_handlers := init_handlers;
       net_handlers := serialized_net_handlers;
@@ -87,12 +84,12 @@ Section Serialized.
 
   Instance serialized_fail_msg_params : FailMsgParams serialized_multi_params :=
     {
-      msg_fail := serialize msg_fail
+      msg_fail := serialize_top serialize msg_fail
     }.
 
   Instance serialized_new_msg_params : NewMsgParams serialized_multi_params :=
     {
-      msg_new := serialize msg_new
+      msg_new := serialize_top serialize msg_new
     }.
 End Serialized.
 
