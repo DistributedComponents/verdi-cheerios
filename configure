@@ -6,6 +6,7 @@
 DEPS=(Verdi StructTact Cheerios)
 CANARIES=("mathcomp.ssreflect.ssreflect" "Verdi Cheerios requires mathcomp to be installed" "Verdi.Verdi" "Build Verdi before building Verdi Cheerios" "StructTact.StructTactics" "Build StructTact before building Verdi Cheerios" "Cheerios.Cheerios" "Build Cheerios before building Verdi Cheerios")
 Verdi_DIRS=(core lib systems extraction)
+Cheerios_DIRS=(core extraction)
 NAMESPACE__="VerdiCheerios"
 
 source coqproject.sh
