@@ -4,11 +4,13 @@ Require Import FunctionalExtensionality.
 Require Import Verdi.TotalMapSimulations.
 Require Import Verdi.PartialMapSimulations.
 
-Require Import Cheerios.Core.
+Require Import Cheerios.IOStream.
 
 Require Import VerdiCheerios.SerializedMsgParams.
 
 Require Import mathcomp.ssreflect.ssreflect.
+
+Import IOStreamSerializer.
 
 Section SerializedMsgCorrect.
   Context {orig_base_params : BaseParams}.
