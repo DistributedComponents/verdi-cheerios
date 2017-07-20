@@ -1,9 +1,12 @@
 Require Import StructTact.Util.
 Require Import Verdi.Verdi.
+
 Require Import FunctionalExtensionality.
+
 Require Import Verdi.TotalMapSimulations.
 Require Import Verdi.PartialMapSimulations.
-Require Import Cheerios.Core.
+
+Require Import Cheerios.Cheerios.
 Require Import VerdiCheerios.SerializedParams.
 
 Require Import mathcomp.ssreflect.ssreflect.

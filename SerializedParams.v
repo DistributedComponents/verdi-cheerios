@@ -1,5 +1,5 @@
 Require Import Verdi.Verdi.
-Require Import Cheerios.Core.
+Require Import Cheerios.Cheerios.
 
 Set Implicit Arguments.
 
