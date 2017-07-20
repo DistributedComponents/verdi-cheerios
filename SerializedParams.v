@@ -1,7 +1,6 @@
 Require Import Verdi.Verdi.
-Require Import Cheerios.IOStream.
+Require Import Cheerios.Core.
 
-Import IOStreamSerializer.
 Set Implicit Arguments.
 
 Section Serialized.
@@ -29,7 +28,7 @@ Section Serialized.
   Definition serialized_net_handlers
              (dst : name)
              (src : name)
-             (wm : IOStream.wire)
+             (wm : IOStreamWriter.wire)
              (d : data) :=
     match deserialize_top deserialize wm with
     | None => ([], d, [])
@@ -39,7 +38,7 @@ Section Serialized.
 
   Definition serialized_input_handlers
              (h : name)
-             (winp : IOStream.wire)
+             (winp : IOStreamWriter.wire)
              (d : data) :=
     match deserialize_top deserialize winp with
     | None => ([], d, [])
@@ -50,16 +49,16 @@ Section Serialized.
   Instance serialized_base_params : BaseParams :=
     {
       data := data;
-      input := IOStream.wire;
-      output := IOStream.wire
+      input := IOStreamWriter.wire;
+      output := IOStreamWriter.wire
     }.
 
   Instance serialized_multi_params : MultiParams _ :=
     {
       name := name;
       name_eq_dec := name_eq_dec;
-      msg := IOStream.wire;
-      msg_eq_dec := IOStream.wire_eq_dec;
+      msg := IOStreamWriter.wire;
+      msg_eq_dec := IOStreamWriter.wire_eq_dec;
       nodes := nodes;
       init_handlers := init_handlers;
       net_handlers := serialized_net_handlers;
