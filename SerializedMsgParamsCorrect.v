@@ -9,7 +9,8 @@ Require Import Verdi.PartialMapSimulations.
 Require Import Cheerios.Cheerios.
 Require Import VerdiCheerios.SerializedMsgParams.
 
-Require Import mathcomp.ssreflect.ssreflect.
+Require Import ssr.ssreflect.
+Set Bullet Behavior "None".
 
 Section SerializedMsgCorrect.
   Context {orig_base_params : BaseParams}.
