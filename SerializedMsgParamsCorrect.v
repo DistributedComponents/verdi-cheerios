@@ -567,7 +567,7 @@ Section SerializedMsgCorrect.
   forall net tr,
     @step_async_star _ serialized_multi_params step_async_init net tr ->
     exists tr', @step_async_star _ orig_multi_params step_async_init (deserialize_net net) tr' /\ 
-     filterMap pt_trace_remove_empty_out tr = filterMap pt_trace_remove_empty_out tr'.
+     filterMap trace_non_empty_out tr = filterMap trace_non_empty_out tr'.
   Proof.
   move => net tr H_st.
   apply step_async_pt_mapped_simulation_star_1 in H_st.
@@ -630,7 +630,7 @@ Section SerializedMsgCorrect.
   forall net failed tr,
     @step_failure_star _ _ serialized_failure_params step_failure_init (failed, net) tr ->
     exists tr', @step_failure_star _ _ orig_failure_params step_failure_init (failed, deserialize_net net) tr' /\ 
-     filterMap pt_trace_remove_empty_out tr = filterMap pt_trace_remove_empty_out tr'.
+     filterMap trace_non_empty_out tr = filterMap trace_non_empty_out tr'.
   Proof.
   move => net failed tr H_st.
   apply step_failure_pt_mapped_simulation_star_1 in H_st.
