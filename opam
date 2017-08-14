@@ -14,11 +14,10 @@ build: [
 install: [ make "install" ]
 remove: [ "sh" "-c" "rm -rf '%{lib}%/coq/user-contrib/VerdiCheerios'" ]
 depends: [ 
-  "coq" {((>= "8.5" & < "8.6~") | (>= "8.6" & < "8.7~"))}
-  "coq-mathcomp-ssreflect" {>= "1.6" & < "1.7~"}
+  "coq" {>= "8.7" & < "8.8~"}
   "StructTact" {= "dev"}
-  "cheerios" {= "dev"}
-  "verdi" {= "dev"}
+  "cheerios" {= "8.7.dev"}
+  "verdi" {= "8.7.dev"}
 ]
 
 tags: [ "keyword:serialization" ]
