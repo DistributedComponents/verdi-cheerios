@@ -561,11 +561,13 @@ Section SerializedMsgCorrect.
   by right.
   Qed.
 
+  (* due to use of general simulation lemmas, this lemma is not as general as it could be *)
+  (* if Cheerios-specific assumptions were used *)
   Lemma step_async_deserialized_simulation_star :
   forall net tr,
     @step_async_star _ serialized_multi_params step_async_init net tr ->
     exists tr', @step_async_star _ orig_multi_params step_async_init (deserialize_net net) tr' /\ 
-     filterMap pt_trace_remove_empty_out tr = filterMap pt_trace_remove_empty_out tr'.
+     filterMap trace_non_empty_out tr = filterMap trace_non_empty_out tr'.
   Proof.
   move => net tr H_st.
   apply step_async_pt_mapped_simulation_star_1 in H_st.
@@ -622,11 +624,13 @@ Section SerializedMsgCorrect.
   by break_and.  
   Qed.
 
+  (* due to use of general simulation lemmas, this result is not as general as it could be *)
+  (* if Cheerios-specific assumptions were used *)
   Lemma step_failure_deserialized_simulation_star :
   forall net failed tr,
     @step_failure_star _ _ serialized_failure_params step_failure_init (failed, net) tr ->
     exists tr', @step_failure_star _ _ orig_failure_params step_failure_init (failed, deserialize_net net) tr' /\ 
-     filterMap pt_trace_remove_empty_out tr = filterMap pt_trace_remove_empty_out tr'.
+     filterMap trace_non_empty_out tr = filterMap trace_non_empty_out tr'.
   Proof.
   move => net failed tr H_st.
   apply step_failure_pt_mapped_simulation_star_1 in H_st.
@@ -658,7 +662,7 @@ Section SerializedMsgCorrect.
     forall net net' failed failed' tr,
       @step_ordered_failure _ _ serialized_name_overlay_params serialized_fail_msg_params (failed, net) (failed', net') tr ->
       @step_ordered_failure _ _ orig_name_overlay_params orig_fail_msg_params (failed, deserialize_onet net) (failed', deserialize_onet net') tr \/
-      deserialize_onet net = deserialize_onet net' /\ failed = failed'.
+      deserialize_onet net = deserialize_onet net' /\ failed = failed' /\ tr = [].
   Proof.   
   move => net net' failed failed' tr H_st.
   eapply step_ordered_failure_pt_mapped_simulation_1 in H_st.
@@ -678,7 +682,17 @@ Section SerializedMsgCorrect.
     exact: H_st.
   right.
   break_and.
-  by rewrite -2!pt_map_onet_deserialize_onet.
+  split; first by rewrite -2!pt_map_onet_deserialize_onet.
+  split => //.
+  move: H1.
+  rewrite /pt_map_trace_ev /= /id /=.
+  set f := fun _ => _.
+  clear.
+  elim => //=.
+  elim: tr => //=.
+  case => n; case => /= [i|o] l IH.
+  * by rewrite -IH.
+  * by rewrite -IH.
   Qed.
 
   Lemma step_ordered_failure_serialized_simulation_star :
@@ -703,7 +717,7 @@ Section SerializedMsgCorrect.
     NoDup (odnwNodes net) ->
     @step_ordered_dynamic_failure _ _ serialized_name_overlay_params serialized_new_msg_params serialized_fail_msg_params (failed, net) (failed', net') tr ->
     @step_ordered_dynamic_failure _ _ orig_name_overlay_params orig_new_msg_params orig_fail_msg_params (failed, deserialize_odnet net) (failed', deserialize_odnet net') tr \/
-    deserialize_odnet net = deserialize_odnet net' /\ failed = failed'.
+    deserialize_odnet net = deserialize_odnet net' /\ failed = failed' /\ tr = [].
   Proof.
   move => net net' failed failed' tr H_nd H_st.
   eapply step_ordered_dynamic_failure_pt_mapped_simulation_1 in H_st; last by [].
@@ -722,11 +736,21 @@ Section SerializedMsgCorrect.
       by rewrite -IH.
     exact: H_st.
   right.
-  break_and.
-  by rewrite -2!pt_map_odnet_deserialize_odnet.
+  move: H_st => [H_eq_net [H_eq_f H_eq_tr]].
+  split; first by rewrite -2!pt_map_odnet_deserialize_odnet.
+  split => //.
+  move: H_eq_tr.
+  rewrite /pt_map_trace_ev /= /id.
+  set f := fun _ => _.
+  clear.
+  elim => //=.
+  elim: tr => //=.
+  case => n; case => /= [i|o] l IH.
+  * by rewrite -IH.
+  * by rewrite -IH.
   Qed.
 
-  Theorem step_ordered_dynamic_failure_dserialized_simulation_star :
+  Theorem step_ordered_dynamic_failure_deserialized_simulation_star :
     forall net failed tr,
     @step_ordered_dynamic_failure_star _ _ serialized_name_overlay_params serialized_new_msg_params serialized_fail_msg_params step_ordered_dynamic_failure_init (failed, net) tr ->
     @step_ordered_dynamic_failure_star _ _ orig_name_overlay_params orig_new_msg_params orig_fail_msg_params step_ordered_dynamic_failure_init (failed, deserialize_odnet net) tr.
