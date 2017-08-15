@@ -24,16 +24,16 @@ Section SerializedMsgCorrect.
     @mkPacket _ serialized_multi_params
               (@pSrc _ orig_multi_params p)
               (pDst p)
-              (serialize_top serialize (pBody p)).
+              (serialize_top (serialize (pBody p))).
 
   Definition serialize_net (net : @network _ orig_multi_params) : (@network _ serialized_multi_params) :=
     @mkNetwork _ serialized_multi_params (map serialize_packet (nwPackets net)) net.(nwState).
 
   Definition serialize_onet (net : @ordered_network _ orig_multi_params) : (@ordered_network _ serialized_multi_params) :=
-    @mkONetwork _ serialized_multi_params (fun src dst => map (serialize_top serialize) (net.(onwPackets) src dst)) net.(onwState).
+    @mkONetwork _ serialized_multi_params (fun src dst => map (fun v => serialize_top (serialize v)) (net.(onwPackets) src dst)) net.(onwState).
 
   Definition serialize_odnet (net : @ordered_dynamic_network _ orig_multi_params) : (@ordered_dynamic_network _ serialized_multi_params) :=
-    @mkODNetwork _ serialized_multi_params net.(odnwNodes) (fun src dst => map (serialize_top serialize) (net.(odnwPackets) src dst)) net.(odnwState).
+    @mkODNetwork _ serialized_multi_params net.(odnwNodes) (fun src dst => map (fun v => serialize_top (serialize v)) (net.(odnwPackets) src dst)) net.(odnwState).
 
   Instance orig_multi_params_name_tot_map :
     MultiParamsNameTotalMap orig_multi_params serialized_multi_params :=
@@ -60,7 +60,7 @@ Section SerializedMsgCorrect.
   Instance orig_multi_params_tot_msg_map :
     MultiParamsMsgTotalMap orig_multi_params serialized_multi_params :=
   {
-    tot_map_msg := serialize_top serialize
+    tot_map_msg := fun v => serialize_top (serialize v)
   }.
 
   Instance orig_failure_params_tot_map_congruency : FailureParamsTotalMapCongruency orig_failure_params serialized_failure_params orig_base_params_tot_map :=

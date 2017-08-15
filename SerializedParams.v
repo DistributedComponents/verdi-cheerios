@@ -17,11 +17,11 @@ Section Serialized.
 
   Definition serialize_name_msg_tuple (nm : name * msg) :=
     let (n, msg) := nm in
-    (n, serialize_top serialize msg).
+    (n, serialize_top (serialize msg)).
 
   Definition serialize_handler_result (res : (list output) * data * list (name * msg)) :=
     let '(outputs, data, messages) := res in
-    let serialized_outputs := map (serialize_top (@serialize output orig_output_serializer)) outputs in
+    let serialized_outputs := map (fun v => serialize_top (@serialize output orig_output_serializer v)) outputs in
     let serialized_messages := map serialize_name_msg_tuple messages in
     (serialized_outputs, data, serialized_messages).
 
@@ -84,12 +84,12 @@ Section Serialized.
 
   Instance serialized_fail_msg_params : FailMsgParams serialized_multi_params :=
     {
-      msg_fail := serialize_top serialize msg_fail
+      msg_fail := serialize_top (serialize msg_fail)
     }.
 
   Instance serialized_new_msg_params : NewMsgParams serialized_multi_params :=
     {
-      msg_new := serialize_top serialize msg_new
+      msg_new := serialize_top (serialize msg_new)
     }.
 End Serialized.
 
