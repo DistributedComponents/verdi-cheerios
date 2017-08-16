@@ -30,7 +30,7 @@ Section SerializedCorrect.
     @mkPacket _ serialized_multi_params
               (@pSrc _ orig_multi_params p)
               (pDst p)
-              (serialize_top serialize (pBody p)).
+              (serialize_top (serialize (pBody p))).
 
   Definition serialize_net (net : @network _ orig_multi_params) : (@network _ serialized_multi_params) :=
     @mkNetwork _ serialized_multi_params (map serialize_packet (nwPackets net)) net.(nwState).
@@ -39,20 +39,20 @@ Section SerializedCorrect.
     @name _ serialized_multi_params * (@input serialized_base_params + list (@output serialized_base_params)) :=
   let (n, s) := e in
   match s with
-  | inl io => (n, inl (serialize_top serialize io))
-  | inr lo => (n, inr (map (serialize_top serialize) lo))
+  | inl io => (n, inl (serialize_top (serialize io)))
+  | inr lo => (n, inr (map (fun v => serialize_top (serialize v)) lo))
   end.
 
   Definition serialize_onet (net : @ordered_network _ orig_multi_params) : (@ordered_network _ serialized_multi_params) :=
-    @mkONetwork _ serialized_multi_params (fun src dst => map (serialize_top serialize) (net.(onwPackets) src dst)) net.(onwState).
+    @mkONetwork _ serialized_multi_params (fun src dst => map (fun v => serialize_top (serialize v)) (net.(onwPackets) src dst)) net.(onwState).
 
   Definition serialize_odnet (net : @ordered_dynamic_network _ orig_multi_params) : (@ordered_dynamic_network _ serialized_multi_params) :=
-    @mkODNetwork _ serialized_multi_params net.(odnwNodes) (fun src dst => map (serialize_top serialize) (net.(odnwPackets) src dst)) net.(odnwState).
+    @mkODNetwork _ serialized_multi_params net.(odnwNodes) (fun src dst => map (fun v => serialize_top (serialize v)) (net.(odnwPackets) src dst)) net.(odnwState).
 
   Definition serialize_trace_ev (e : @name _ orig_multi_params * (@input orig_base_params + (@output orig_base_params))) :=
     match e with
-    | (n, inl i) => (n, inl (serialize_top serialize i))
-    | (n, inr o) => (n, inr (serialize_top serialize o))
+    | (n, inl i) => (n, inl (serialize_top (serialize i)))
+    | (n, inr o) => (n, inr (serialize_top (serialize o)))
     end.
 
   Instance orig_multi_params_name_tot_map :
@@ -73,14 +73,14 @@ Section SerializedCorrect.
     BaseParamsTotalMap orig_base_params serialized_base_params :=
   {
     tot_map_data := id;
-    tot_map_input := serialize_top serialize;
-    tot_map_output := serialize_top serialize
+    tot_map_input := fun v => serialize_top (serialize v);
+    tot_map_output := fun v => serialize_top (serialize v)
   }.
 
   Instance orig_multi_params_tot_msg_map :
     MultiParamsMsgTotalMap orig_multi_params serialized_multi_params :=
   {
-    tot_map_msg := serialize_top serialize
+    tot_map_msg := fun v => serialize_top (serialize v)
   }.
 
   Instance orig_failure_params_tot_map_congruency : FailureParamsTotalMapCongruency orig_failure_params serialized_failure_params orig_base_params_tot_map :=
