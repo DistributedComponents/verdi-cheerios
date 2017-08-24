@@ -17,8 +17,7 @@ Section Serialized.
 
   Definition serialize_handler_result (res : (list output) * data * list (name * msg)) :=
     let '(outputs, data, messages) := res in
-    let serialized_messages := map serialize_name_msg_tuple messages in
-    (outputs, data, serialized_messages).
+    (outputs, data, map serialize_name_msg_tuple messages).
 
   Definition serialized_net_handlers (dst : name) (src : name) (wm : IOStreamWriter.wire) (d : data) :=
     match deserialize_top deserialize wm with
